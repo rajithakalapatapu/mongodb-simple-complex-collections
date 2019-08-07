@@ -58,6 +58,33 @@ def populate_team_scores_collection(db):
                 }
             )
 
+        matches_played = db.test_scheduleresults.find({"TeamID2": team.get("TeamID")})
+        for match_played in matches_played:
+            match_date = match_played["MatchDate"]
+            team1_name = get_team_name_from_team_id(
+                db.test_teams, match_played["TeamID2"]
+            )
+            team2_name = get_team_name_from_team_id(
+                db.test_teams, match_played["TeamID1"]
+            )
+            team1_score = match_played["Team2_Score"]
+            team2_score = match_played["Team1_Score"]
+            stadium_name, stadium_city = get_stadium_details_from_id(
+                db.test_stadiums, match_played["SID"]
+            )
+
+            team_scores["scores"].append(
+                {
+                    "MatchDate": match_date,
+                    "StadiumName": stadium_name,
+                    "StadiumCity": stadium_city,
+                    "Team1Name": team1_name,
+                    "Team1Score": team1_score,
+                    "Team2Name": team2_name,
+                    "Team2Score": team2_score,
+                }
+            )
+
         teams_scores.append(team_scores)
 
     print("Inserting team scores")
