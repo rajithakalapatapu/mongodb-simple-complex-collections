@@ -1,9 +1,9 @@
 from pymongo import MongoClient
 
 
-def find_matches_player_started(db, player_number):
+def find_matches_player_started(db, team, player_number):
     matches_started = []
-    started = db.test_startinglineups.find({"PlayerID": player_number})
+    started = db.test_startinglineups.find({"TeamID": team, "PlayerID": player_number})
     for start in started:
         game_id = start.get("GameID")
         games = db.test_scheduleresults.find({"GameID": game_id})
@@ -22,10 +22,10 @@ def find_matches_player_started(db, player_number):
     return matches_started
 
 
-def find_matches_player_scored(db, player_number):
+def find_matches_player_scored(db, team, player_number):
     matches_scored = []
-    goals = db.test_goals.find({"PlayerID": player_number})
-    own_goals = db.test_owngoals.find({"PlayerID": player_number})
+    goals = db.test_goals.find({"TeamID": team, "PlayerID": player_number})
+    own_goals = db.test_owngoals.find({"TeamID": team, "PlayerID": player_number})
 
     for goal in goals:
         game_results = db.test_scheduleresults.find_one({"GameID": goal.get("GameID")})
@@ -80,8 +80,12 @@ def populate_player_data(db):
             "Team": roster.get("Team"),
             "PNo": roster.get("PlayerID"),
             "Position": roster.get("Position"),
-            "Started": find_matches_player_started(db, roster.get("PlayerID")),
-            "Scored": find_matches_player_scored(db, roster.get("PlayerID")),
+            "Started": find_matches_player_started(
+                db, roster.get("TeamID"), roster.get("PlayerID")
+            ),
+            "Scored": find_matches_player_scored(
+                db, roster.get("TeamID"), roster.get("PlayerID")
+            ),
         }
 
         player_data.append(player)
